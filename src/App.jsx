@@ -14,18 +14,25 @@ function App() {
     localStorage.setItem('watchlist', JSON.stringify(watchlist));
   }, [watchlist]);
 
-  
   const addToWatchlist = async (movie) => {
-  const exists = watchlist.find((m) => m.imdbID === movie.imdbID);
-  if (!exists) {
-    const res = await fetch(`http://www.omdbapi.com/?i=${movie.imdbID}&apikey=525c0cbf`);
-    const fullDetails = await res.json();
-    setWatchlist([...watchlist, fullDetails]);
-  }
-};
+    const exists = watchlist.find((m) => m.imdbID === movie.imdbID);
+    if (!exists) {
+      try {
+        const res = await fetch(`https://www.omdbapi.com/?i=${movie.imdbID}&apikey=525c0cbf`);
+        const fullDetails = await res.json();
+        if (fullDetails.Response === 'True') {
+          setWatchlist(prev => [...prev, fullDetails]);
+        } else {
+          console.error('OMDB error:', fullDetails.Error);
+        }
+      } catch (error) {
+        console.error('Fetch failed:', error);
+      }
+    }
+  };
 
   const removeFromWatchlist = (id) => {
-    setWatchlist(watchlist.filter((m) => m.imdbID !== id));
+    setWatchlist(prev => prev.filter((m) => m.imdbID !== id));
   };
 
   return (
